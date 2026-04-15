@@ -113,4 +113,4 @@ MIT
 
 ---
 
-Built by [Zara](https://x.com/zarazhangrui)
+Inspired by [zarazhangrui/tab-out](https://github.com/zarazhangrui/tab-out) — thanks for the original idea and design.

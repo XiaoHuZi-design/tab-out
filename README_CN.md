@@ -113,4 +113,4 @@ MIT
 
 ---
 
-由 [Zara](https://x.com/zarazhangrui) 开发
+灵感来自 [zarazhangrui/tab-out](https://github.com/zarazhangrui/tab-out) — 感谢原项目提供的思路与设计。
