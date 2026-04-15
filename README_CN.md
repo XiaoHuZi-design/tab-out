@@ -60,7 +60,7 @@ https://github.com/zarazhangrui/tab-out
 **1. 克隆仓库**
 
 ```bash
-git clone https://github.com/zarazhangrui/tab-out.git
+git clone https://github.com/XiaoHuZi-design/tab-out.git
 ```
 
 **2. 加载 Chrome 扩展**
