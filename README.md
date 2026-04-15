@@ -13,7 +13,7 @@ No server. No account. No external API calls. Just a Chrome extension.
 ## Preview
 
 <p align="center">
-  <img src="预览.png" alt="Tab Out Preview" width="800">
+  <img src="最新预览.png" alt="Tab Out Preview" width="800">
 </p>
 
 ---

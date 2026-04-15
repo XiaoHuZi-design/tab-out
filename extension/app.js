@@ -1562,28 +1562,97 @@ async function initBgTheme() {
 
 /* ----------------------------------------------------------------
    BOOKMARKS BAR — read from Chrome bookmarks API
+   Folders become dropdown menus, flat bookmarks stay as-is.
+   Top-level limit: 15. Folder contents: unlimited.
    ---------------------------------------------------------------- */
+
+/**
+ * flattenBookmarks(node)
+ *
+ * Recursively collects all bookmarks (url items) from a node.
+ */
+function flattenBookmarks(node) {
+  const results = [];
+  if (node.url) results.push(node);
+  if (node.children) {
+    for (const child of node.children) results.push(...flattenBookmarks(child));
+  }
+  return results;
+}
+
+/**
+ * renderBookmarkLink(b)
+ *
+ * Renders a single bookmark as a clickable link item.
+ */
+function renderBookmarkLink(b) {
+  let domain = '';
+  try { domain = new URL(b.url).hostname; } catch {}
+  const fav = domain ? `https://www.google.com/s2/favicons?domain=${domain}&sz=16` : '';
+  const title = (b.title || b.url).replace(/"/g, '&quot;');
+  return `<a class="bm-dropdown-link" href="${b.url}" title="${title}">
+    ${fav ? `<img src="${fav}" alt="" onerror="this.style.display='none'">` : ''}
+    <span>${b.title || domain}</span>
+  </a>`;
+}
+
 async function loadBookmarks() {
   const bar = document.getElementById('bookmarksBar');
   if (!bar) return;
   try {
     const tree = await chrome.bookmarks.getTree();
     const bmBar = tree[0]?.children?.[0];
-    const items = (bmBar?.children || []).filter(b => b.url).slice(0, 15);
-    if (items.length === 0) { bar.style.display = 'none'; return; }
-    bar.innerHTML = items.map(b => {
-      let domain = '';
-      try { domain = new URL(b.url).hostname; } catch {}
-      const fav = domain ? `https://www.google.com/s2/favicons?domain=${domain}&sz=16` : '';
-      const title = (b.title || b.url).replace(/"/g, '&quot;');
-      return `<a class="bookmark-item" href="${b.url}" title="${title}">
-        ${fav ? `<img src="${fav}" alt="" onerror="this.style.display='none'">` : ''}
-        <span>${b.title || domain}</span>
-      </a>`;
+    const topItems = (bmBar?.children || []).slice(0, 15);
+    if (topItems.length === 0) { bar.style.display = 'none'; return; }
+
+    bar.innerHTML = topItems.map(item => {
+      if (item.url) {
+        // Flat bookmark
+        let domain = '';
+        try { domain = new URL(item.url).hostname; } catch {}
+        const fav = domain ? `https://www.google.com/s2/favicons?domain=${domain}&sz=16` : '';
+        const title = (item.title || item.url).replace(/"/g, '&quot;');
+        return `<a class="bookmark-item" href="${item.url}" title="${title}">
+          ${fav ? `<img src="${fav}" alt="" onerror="this.style.display='none'">` : ''}
+          <span>${item.title || domain}</span>
+        </a>`;
+      } else if (item.children) {
+        // Folder — render as dropdown
+        const children = flattenBookmarks(item);
+        if (children.length === 0) return '';
+        const folderTitle = (item.title || 'Folder').replace(/"/g, '&quot;');
+        const dropdown = children.map(renderBookmarkLink).join('');
+        return `<div class="bm-folder" data-bm-folder>
+          <button class="bookmark-item bookmark-folder" title="${folderTitle}">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12.75V12A2.25 2.25 0 0 1 4.5 9.75h15A2.25 2.25 0 0 1 21.75 12v.75m-8.69-6.44-2.12-2.12a1.5 1.5 0 0 0-1.061-.44H4.5A2.25 2.25 0 0 0 2.25 6v12a2.25 2.25 0 0 0 2.25 2.25h15A2.25 2.25 0 0 0 21.75 18V9a2.25 2.25 0 0 0-2.25-2.25h-5.379a1.5 1.5 0 0 1-1.06-.44Z" /></svg>
+            <span>${item.title || 'Folder'}</span>
+            <svg class="bm-folder-chevron" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" /></svg>
+          </button>
+          <div class="bm-dropdown">${dropdown}</div>
+        </div>`;
+      }
+      return '';
     }).join('');
+
     bar.style.display = 'flex';
   } catch { bar.style.display = 'none'; }
 }
+
+// Folder dropdown toggle
+document.addEventListener('click', (e) => {
+  const folderBtn = e.target.closest('.bookmark-folder');
+  if (folderBtn) {
+    const folder = folderBtn.closest('.bm-folder');
+    folder.classList.toggle('open');
+    // Close other folders
+    document.querySelectorAll('.bm-folder.open').forEach(f => {
+      if (f !== folder) f.classList.remove('open');
+    });
+    return;
+  }
+  // Click outside — close all folders
+  document.querySelectorAll('.bm-folder.open').forEach(f => f.classList.remove('open'));
+});
 
 /* ----------------------------------------------------------------
    INITIALIZE

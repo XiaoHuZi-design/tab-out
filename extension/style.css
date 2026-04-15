@@ -1303,6 +1303,8 @@ footer { animation: fadeUp 0.5s ease 0.65s both; }
   gap: 6px;
   flex-wrap: wrap;
   margin-bottom: 24px;
+  position: relative;
+  z-index: 100;
   animation: fadeUp 0.5s ease 0.15s both;
 }
 
@@ -1336,6 +1338,91 @@ footer { animation: fadeUp 0.5s ease 0.65s both; }
 }
 
 .bookmark-item span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ---- Bookmark Folder Dropdown ---- */
+.bm-folder {
+  position: relative;
+}
+
+.bookmark-folder {
+  cursor: pointer;
+  background: var(--card-bg);
+  border: 1px solid var(--warm-gray);
+}
+
+.bookmark-folder svg {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+  color: var(--accent-amber);
+}
+
+.bm-folder-chevron {
+  width: 12px !important;
+  height: 12px !important;
+  color: var(--muted) !important;
+  transition: transform 0.2s;
+}
+
+.bm-folder.open .bookmark-folder {
+  border-color: var(--accent-amber);
+  background: rgba(200, 113, 58, 0.04);
+}
+
+.bm-folder.open .bm-folder-chevron {
+  transform: rotate(180deg);
+}
+
+.bm-dropdown {
+  display: none;
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  min-width: 180px;
+  max-width: 280px;
+  max-height: 320px;
+  overflow-y: auto;
+  background: var(--card-bg);
+  border: 1px solid var(--warm-gray);
+  border-radius: 8px;
+  box-shadow: 0 8px 24px var(--shadow);
+  z-index: 999;
+  padding: 4px 0;
+}
+
+.bm-folder.open .bm-dropdown {
+  display: block;
+  animation: fadeUp 0.15s ease both;
+}
+
+.bm-dropdown-link {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 12px;
+  text-decoration: none;
+  color: var(--ink);
+  font-size: 12px;
+  font-weight: 400;
+  transition: background 0.15s;
+}
+
+.bm-dropdown-link:hover {
+  background: rgba(200, 113, 58, 0.06);
+}
+
+.bm-dropdown-link img {
+  width: 16px;
+  height: 16px;
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+
+.bm-dropdown-link span {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
